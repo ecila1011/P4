@@ -1,0 +1,42 @@
+main:
+  loadI 4 => r0
+  i2i r0 => RET
+l0:
+  return
+
+==========================
+sp=65536 bp=-9999999 ret=-9999999
+virtual regs: 
+stack:
+other memory:
+==========================
+
+Executing: loadI 4 => r0
+
+==========================
+sp=65536 bp=-9999999 ret=-9999999
+virtual regs:  r0=4
+stack:
+other memory:
+==========================
+
+Executing: i2i r0 => RET
+
+==========================
+sp=65536 bp=-9999999 ret=4
+virtual regs:  r0=4
+stack:
+other memory:
+==========================
+
+Executing: l0:
+
+==========================
+sp=65536 bp=-9999999 ret=4
+virtual regs:  r0=4
+stack:
+other memory:
+==========================
+
+Executing: return
+RETURN VALUE = 4

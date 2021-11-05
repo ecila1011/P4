@@ -1,0 +1,46 @@
+--- outputs/A_print_int.txt	2021-11-05 18:09:15.965616950 -0400
++++ expected/A_print_int.txt	2021-10-27 14:43:21.000000000 -0400
+@@ -1,42 +1 @@
+-main:
+-  loadI 0 => r1
+-  i2i r1 => RET
+-l0:
+-  return
+-
+-==========================
+-sp=65536 bp=-9999999 ret=-9999999
+-virtual regs: 
+-stack:
+-other memory:
+-==========================
+-
+-Executing: loadI 0 => r1
+-
+-==========================
+-sp=65536 bp=-9999999 ret=-9999999
+-virtual regs:  r1=0
+-stack:
+-other memory:
+-==========================
+-
+-Executing: i2i r1 => RET
+-
+-==========================
+-sp=65536 bp=-9999999 ret=0
+-virtual regs:  r1=0
+-stack:
+-other memory:
+-==========================
+-
+-Executing: l0:
+-
+-==========================
+-sp=65536 bp=-9999999 ret=0
+-virtual regs:  r1=0
+-stack:
+-other memory:
+-==========================
+-
+-Executing: return
+-RETURN VALUE = 0
++7RETURN VALUE = 0
