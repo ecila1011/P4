@@ -1,3 +1,5 @@
 def int main(){
-    return 3 + 4;
+    int a;
+    a = 4;
+    return 4;
 }
