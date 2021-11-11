@@ -1,11 +1,12 @@
-def int ten() { 
-    int a;
-    a = 0;
-    return 10; 
-}
-    
 def int main() { 
     int a;
-    a = 0;
-    return ten(); 
+    if (true)
+    {
+        a = 1000;
+    }
+    else
+    {
+        a = 1;
+    }
+    return a; 
 }

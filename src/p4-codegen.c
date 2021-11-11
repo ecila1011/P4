@@ -139,8 +139,8 @@ void CodeGenVisitor_gen_program(NodeVisitor *visitor, ASTNode *node)
      * really any need to re-print all the functions in the program node *
      */
     ASTNode_set_attribute(node, "code", InsnList_new(), (Destructor)InsnList_free);
-    Operand bp = base_register();
-    bp.imm = 0;
+    // Operand bp = base_register();
+    // bp.imm = 0;
     /* copy code from each function */
     FOR_EACH(ASTNode *, func, node->program.functions)
     {
