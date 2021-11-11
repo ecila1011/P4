@@ -1,13 +1,19 @@
-==20800== Memcheck, a memory error detector
-==20800== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==20800== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
-==20800== Command: ../decaf inputs/print_int.decaf
-==20800== 
+==655193== Memcheck, a memory error detector
+==655193== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==655193== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==655193== Command: ../decaf inputs/print_int.decaf
+==655193== 
 main:
+  push BP
   i2i SP => BP
+  addI SP, 0 => SP
+  call print_int
   loadI 0 => r1
   i2i r1 => RET
+  i2i r1 => RET
 l0:
+  i2i BP => SP
+  pop BP
   return
 
 ==========================
@@ -17,50 +23,47 @@ stack:
 other memory:
 ==========================
 
+Executing: push BP
+
+==========================
+sp=65528 bp=-9999999 ret=-9999999
+virtual regs: 
+stack:  65528: -9999999
+other memory:
+==========================
+
 Executing: i2i SP => BP
 
 ==========================
-sp=65536 bp=65536 ret=-9999999
+sp=65528 bp=65528 ret=-9999999
 virtual regs: 
-stack:
+stack:  65528: -9999999
 other memory:
 ==========================
 
-Executing: loadI 0 => r1
+Executing: addI SP, 0 => SP
 
 ==========================
-sp=65536 bp=65536 ret=-9999999
-virtual regs:  r1=0
-stack:
+sp=65528 bp=65528 ret=-9999999
+virtual regs: 
+stack:  65528: -9999999
 other memory:
 ==========================
 
-Executing: i2i r1 => RET
-
-==========================
-sp=65536 bp=65536 ret=0
-virtual regs:  r1=0
-stack:
-other memory:
-==========================
-
-Executing: l0:
-
-==========================
-sp=65536 bp=65536 ret=0
-virtual regs:  r1=0
-stack:
-other memory:
-==========================
-
-Executing: return
-RETURN VALUE = 0
-==20800== 
-==20800== HEAP SUMMARY:
-==20800==     in use at exit: 0 bytes in 0 blocks
-==20800==   total heap usage: 1,795 allocs, 1,795 frees, 349,492 bytes allocated
-==20800== 
-==20800== All heap blocks were freed -- no leaks are possible
-==20800== 
-==20800== For lists of detected and suppressed errors, rerun with: -s
-==20800== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+Executing: call print_int
+ERROR: No call target found for 'print_int'
+==655193== 
+==655193== HEAP SUMMARY:
+==655193==     in use at exit: 127,816 bytes in 16 blocks
+==655193==   total heap usage: 1,820 allocs, 1,804 frees, 373,268 bytes allocated
+==655193== 
+==655193== LEAK SUMMARY:
+==655193==    definitely lost: 0 bytes in 0 blocks
+==655193==    indirectly lost: 0 bytes in 0 blocks
+==655193==      possibly lost: 0 bytes in 0 blocks
+==655193==    still reachable: 127,816 bytes in 16 blocks
+==655193==         suppressed: 0 bytes in 0 blocks
+==655193== Rerun with --leak-check=full to see details of leaked memory
+==655193== 
+==655193== For lists of detected and suppressed errors, rerun with: -s
+==655193== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

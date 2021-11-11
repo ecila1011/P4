@@ -1,13 +1,18 @@
-==20785== Memcheck, a memory error detector
-==20785== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==20785== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
-==20785== Command: ../decaf inputs/sanity.decaf
-==20785== 
+==655174== Memcheck, a memory error detector
+==655174== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==655174== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==655174== Command: ../decaf inputs/sanity.decaf
+==655174== 
 main:
+  push BP
   i2i SP => BP
+  addI SP, 0 => SP
   loadI 4 => r0
   i2i r0 => RET
+  i2i r0 => RET
 l0:
+  i2i BP => SP
+  pop BP
   return
 
 ==========================
@@ -17,50 +22,95 @@ stack:
 other memory:
 ==========================
 
+Executing: push BP
+
+==========================
+sp=65528 bp=-9999999 ret=-9999999
+virtual regs: 
+stack:  65528: -9999999
+other memory:
+==========================
+
 Executing: i2i SP => BP
 
 ==========================
-sp=65536 bp=65536 ret=-9999999
+sp=65528 bp=65528 ret=-9999999
 virtual regs: 
-stack:
+stack:  65528: -9999999
+other memory:
+==========================
+
+Executing: addI SP, 0 => SP
+
+==========================
+sp=65528 bp=65528 ret=-9999999
+virtual regs: 
+stack:  65528: -9999999
 other memory:
 ==========================
 
 Executing: loadI 4 => r0
 
 ==========================
-sp=65536 bp=65536 ret=-9999999
+sp=65528 bp=65528 ret=-9999999
 virtual regs:  r0=4
-stack:
+stack:  65528: -9999999
 other memory:
 ==========================
 
 Executing: i2i r0 => RET
 
 ==========================
-sp=65536 bp=65536 ret=4
+sp=65528 bp=65528 ret=4
 virtual regs:  r0=4
-stack:
+stack:  65528: -9999999
+other memory:
+==========================
+
+Executing: i2i r0 => RET
+
+==========================
+sp=65528 bp=65528 ret=4
+virtual regs:  r0=4
+stack:  65528: -9999999
 other memory:
 ==========================
 
 Executing: l0:
 
 ==========================
-sp=65536 bp=65536 ret=4
+sp=65528 bp=65528 ret=4
+virtual regs:  r0=4
+stack:  65528: -9999999
+other memory:
+==========================
+
+Executing: i2i BP => SP
+
+==========================
+sp=65528 bp=65528 ret=4
+virtual regs:  r0=4
+stack:  65528: -9999999
+other memory:
+==========================
+
+Executing: pop BP
+
+==========================
+sp=65536 bp=-9999999 ret=4
 virtual regs:  r0=4
 stack:
-other memory:
+other memory:  65528: -9999999
 ==========================
 
 Executing: return
 RETURN VALUE = 4
-==20785== 
-==20785== HEAP SUMMARY:
-==20785==     in use at exit: 0 bytes in 0 blocks
-==20785==   total heap usage: 1,759 allocs, 1,759 frees, 339,548 bytes allocated
-==20785== 
-==20785== All heap blocks were freed -- no leaks are possible
-==20785== 
-==20785== For lists of detected and suppressed errors, rerun with: -s
-==20785== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==655174== 
+==655174== HEAP SUMMARY:
+==655174==     in use at exit: 0 bytes in 0 blocks
+==655174==   total heap usage: 1,776 allocs, 1,776 frees, 357,900 bytes allocated
+==655174== 
+==655174== All heap blocks were freed -- no leaks are possible
+==655174== 
+==655174== For lists of detected and suppressed errors, rerun with: -s
+==655174== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

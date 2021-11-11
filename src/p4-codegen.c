@@ -15,6 +15,11 @@ typedef struct CodeGenData
      */
     Operand current_epilogue_jump_label;
 
+    /**
+     * @brief Reference to the current return register
+     */
+    Operand current_return_register;
+
     /* add any new desired state information (and clean it up in CodeGenData_free) */
 } CodeGenData;
 
@@ -28,6 +33,7 @@ CodeGenData *CodeGenData_new()
     CodeGenData *data = (CodeGenData *)calloc(1, sizeof(CodeGenData));
     CHECK_MALLOC_PTR(data);
     data->current_epilogue_jump_label = empty_operand();
+    data->current_return_register= empty_operand();
     return data;
 }
 
@@ -150,12 +156,17 @@ void CodeGenVisitor_gen_funcdecl(NodeVisitor *visitor, ASTNode *node)
     /* BOILERPLATE: TODO: implement prologue */
     Operand bp = base_register();
     Operand sp = stack_register();
+    EMIT1OP(PUSH, bp);
     EMIT2OP(I2I, sp, bp);
+    EMIT3OP(ADD_I, sp, int_const(0), sp);
+
     /* copy code from body */
     ASTNode_copy_code(node, node->funcdecl.body);
 
     EMIT1OP(LABEL, DATA->current_epilogue_jump_label);
     /* BOILERPLATE: TODO: implement epilogue */
+    EMIT2OP(I2I, bp, sp);
+    EMIT1OP(POP, bp);
     EMIT0OP(RETURN);
 }
 
@@ -174,10 +185,10 @@ void CodeGenVisitor_postvisit_literal(NodeVisitor *visitor, ASTNode *node)
     {
         op = int_const(node->literal.integer);
     }
-    // else if (node->literal.type == STR)
-    // {
-    //     op = str_const(node->literal.string);
-    // }
+    else if (node->literal.type == BOOL)
+    {
+        op = int_const(node->literal.boolean);
+    }
     Operand reg = virtual_register();
     EMIT2OP(LOAD_I, op, reg);
 
@@ -188,6 +199,10 @@ void CodeGenVisitor_postvisit_return(NodeVisitor *visitor, ASTNode *node)
 {
     // create value node for easier handling
     ASTNode *value = node->funcreturn.value;
+
+    // create return register
+    Operand reg = virtual_register();
+    Operand retReg = return_register();
     
     // Literal
     if (ASTNode_has_attribute(value, "reg"))
@@ -196,18 +211,22 @@ void CodeGenVisitor_postvisit_return(NodeVisitor *visitor, ASTNode *node)
         ASTNode_copy_code(node, value);
 
         // emit the instruction
-        EMIT2OP(I2I, ASTNode_get_temp_reg(value), return_register());
+        reg = ASTNode_get_temp_reg(value);
+        EMIT2OP(I2I, reg, retReg);
     }
     // Variable
     else
     {
         // Load location into register
-        Operand retReg = virtual_register();
         Symbol *sym = lookup_symbol(node, (node->assignment.location)->location.name);
-        EMIT3OP(LOAD_AI, var_base(node, sym), var_offset(node, sym), retReg);
-        // Load into return register
-        EMIT2OP(I2I, retReg, return_register());
+        EMIT3OP(LOAD_AI, var_base(node, sym), var_offset(node, sym), reg);
     }
+
+    // load into return register
+    EMIT2OP(I2I, reg, retReg);
+
+    // set current return register
+    DATA->current_return_register = reg;
 }
 
 void CodeGenVisitor_postvisit_binaryop(NodeVisitor *visitor, ASTNode *node)
@@ -305,6 +324,15 @@ void CodeGenVisitor_postvisit_assignment(NodeVisitor *visitor, ASTNode *node)
     EMIT3OP(STORE_AI, ASTNode_get_temp_reg(node->assignment.value), var_base(node, sym), var_offset(node, sym));
 }
 
+void CodeGenVisitor_postvisit_location(NodeVisitor *visitor, ASTNode *node) 
+{
+    Operand reg = virtual_register();
+    Symbol *sym = lookup_symbol(node, node->location.name);
+    EMIT3OP(LOAD_AI, var_base(node, sym), var_offset(node, sym), reg);
+    ASTNode_set_temp_reg(node, reg);
+
+}
+
 // I dont know if this is needed or how it would be needed
 void CodeGenVisitor_postvisit_vardecl(NodeVisitor *visitor, ASTNode *node)
 {
@@ -313,9 +341,90 @@ void CodeGenVisitor_postvisit_vardecl(NodeVisitor *visitor, ASTNode *node)
     // EMIT1OP(PUSH, var_base(node, sym));
 }
 
+void CodeGenVisitor_postvisit_conditional(NodeVisitor *visitor, ASTNode *node)
+{
+    // copy the condition code
+    ASTNode_copy_code(node, node->conditional.condition);
+
+    // make operands to be used by the different emit calls
+    Operand l1 = anonymous_label();
+    Operand l2 = anonymous_label();
+    Operand done = empty_operand(); // this is empty because of the possibility of no else block
+
+    // the existence of the else block will change our done label
+    if (node->conditional.else_block != NULL) 
+    {
+        done = anonymous_label();
+    }
+    else 
+    {
+        done = l2;
+    }
+
+    // emit the cbr comparison as well as the first label
+    EMIT3OP(CBR, ASTNode_get_temp_reg(node->conditional.condition), l1, l2);
+    EMIT1OP(LABEL, l1);
+
+    // copy code from the if block
+    ASTNode_copy_code(node, node->conditional.if_block);
+
+    // if else block exists, print jump instruction
+    if (node->conditional.else_block != NULL) 
+    {
+        EMIT1OP(JUMP, done);
+    }
+
+    // if else block exists, print label and copy else block code
+    if (node->conditional.else_block != NULL) 
+    {
+        EMIT1OP(LABEL, l2);
+        ASTNode_copy_code(node, node->conditional.else_block);
+    }
+
+    // print the final label
+    EMIT1OP(LABEL, done);
+}
+
+void CodeGenVisitor_postvisit_while(NodeVisitor *visitor, ASTNode *node) 
+{
+    Operand cond = anonymous_label();
+    Operand body = anonymous_label();
+    Operand done = anonymous_label();
+
+    // emit the label for the condition and copy code from condition
+    EMIT1OP(LABEL, cond);
+    ASTNode_copy_code(node, node->whileloop.condition);
+
+    // emit the cbr code that takes the condition and then jumps to the body or done
+    EMIT3OP(CBR, ASTNode_get_temp_reg(node->whileloop.condition), body, done);
+
+    // emit the label for the body and copy code from body
+    EMIT1OP(LABEL, body);
+    ASTNode_copy_code(node, node->whileloop.body);
+
+    // jump to the condtion
+    EMIT1OP(JUMP, cond);
+
+    // print the done label
+    EMIT1OP(LABEL, done);
+
+}
+
+void CodeGenVisitor_postvisit_funccall(NodeVisitor *visitor, ASTNode *node) 
+{
+    Operand reg = DATA->current_return_register;
+    ASTNode_set_temp_reg(node, reg);
+    EMIT1OP(CALL, call_label(node->funccall.name));
+}
+
 #endif
 InsnList *generate_code(ASTNode *tree)
 {
+    // make sure tree is not null
+    if (tree == NULL) 
+    {
+        return NULL;
+    }
     InsnList *iloc = InsnList_new();
 
     NodeVisitor *v = NodeVisitor_new();
@@ -335,6 +444,10 @@ InsnList *generate_code(ASTNode *tree)
     v->postvisit_binaryop = CodeGenVisitor_postvisit_binaryop;
     v->postvisit_unaryop = CodeGenVisitor_postvisit_unaryop;
     v->postvisit_assignment = CodeGenVisitor_postvisit_assignment;
+    v->postvisit_conditional = CodeGenVisitor_postvisit_conditional;
+    v->postvisit_whileloop = CodeGenVisitor_postvisit_while;
+    v->postvisit_location = CodeGenVisitor_postvisit_location;
+    v->postvisit_funccall = CodeGenVisitor_postvisit_funccall;
 
     /* generate code into AST attributes */
     NodeVisitor_traverse_and_free(v, tree);

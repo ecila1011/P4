@@ -1,11 +1,17 @@
---- outputs/A_print_int.txt	2021-11-11 12:58:40.617183208 -0500
-+++ expected/A_print_int.txt	2021-11-11 09:37:32.244048477 -0500
-@@ -1,52 +1 @@
+--- outputs/A_print_int.txt	2021-11-11 18:12:37.853449698 -0500
++++ expected/A_print_int.txt	2021-10-27 14:43:21.000000000 -0400
+@@ -1,49 +1 @@
 -main:
+-  push BP
 -  i2i SP => BP
+-  addI SP, 0 => SP
+-  call print_int
 -  loadI 0 => r1
 -  i2i r1 => RET
+-  i2i r1 => RET
 -l0:
+-  i2i BP => SP
+-  pop BP
 -  return
 -
 -==========================
@@ -15,42 +21,33 @@
 -other memory:
 -==========================
 -
+-Executing: push BP
+-
+-==========================
+-sp=65528 bp=-9999999 ret=-9999999
+-virtual regs: 
+-stack:  65528: -9999999
+-other memory:
+-==========================
+-
 -Executing: i2i SP => BP
 -
 -==========================
--sp=65536 bp=65536 ret=-9999999
+-sp=65528 bp=65528 ret=-9999999
 -virtual regs: 
--stack:
+-stack:  65528: -9999999
 -other memory:
 -==========================
 -
--Executing: loadI 0 => r1
+-Executing: addI SP, 0 => SP
 -
 -==========================
--sp=65536 bp=65536 ret=-9999999
--virtual regs:  r1=0
--stack:
+-sp=65528 bp=65528 ret=-9999999
+-virtual regs: 
+-stack:  65528: -9999999
 -other memory:
 -==========================
 -
--Executing: i2i r1 => RET
--
--==========================
--sp=65536 bp=65536 ret=0
--virtual regs:  r1=0
--stack:
--other memory:
--==========================
--
--Executing: l0:
--
--==========================
--sp=65536 bp=65536 ret=0
--virtual regs:  r1=0
--stack:
--other memory:
--==========================
--
--Executing: return
--RETURN VALUE = 0
+-Executing: call print_int
+-ERROR: No call target found for 'print_int'
 +7RETURN VALUE = 0

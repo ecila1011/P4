@@ -1,5 +1,11 @@
-def int main(){
+def int ten() { 
     int a;
-    a = 4;
-    return 4;
+    a = 0;
+    return 10; 
+}
+    
+def int main() { 
+    int a;
+    a = 0;
+    return ten(); 
 }
