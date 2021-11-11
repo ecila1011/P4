@@ -1,4 +1,5 @@
 main:
+  i2i SP => BP
   loadI 0 => r1
   i2i r1 => RET
 l0:
@@ -11,10 +12,19 @@ stack:
 other memory:
 ==========================
 
+Executing: i2i SP => BP
+
+==========================
+sp=65536 bp=65536 ret=-9999999
+virtual regs: 
+stack:
+other memory:
+==========================
+
 Executing: loadI 0 => r1
 
 ==========================
-sp=65536 bp=-9999999 ret=-9999999
+sp=65536 bp=65536 ret=-9999999
 virtual regs:  r1=0
 stack:
 other memory:
@@ -23,7 +33,7 @@ other memory:
 Executing: i2i r1 => RET
 
 ==========================
-sp=65536 bp=-9999999 ret=0
+sp=65536 bp=65536 ret=0
 virtual regs:  r1=0
 stack:
 other memory:
@@ -32,7 +42,7 @@ other memory:
 Executing: l0:
 
 ==========================
-sp=65536 bp=-9999999 ret=0
+sp=65536 bp=65536 ret=0
 virtual regs:  r1=0
 stack:
 other memory:
