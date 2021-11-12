@@ -15,11 +15,6 @@ typedef struct CodeGenData
      */
     Operand current_epilogue_jump_label;
 
-    /**
-     * @brief Reference to the current return register
-     */
-    Operand current_return_register;
-
     /* add any new desired state information (and clean it up in CodeGenData_free) */
 } CodeGenData;
 
@@ -33,7 +28,6 @@ CodeGenData *CodeGenData_new()
     CodeGenData *data = (CodeGenData *)calloc(1, sizeof(CodeGenData));
     CHECK_MALLOC_PTR(data);
     data->current_epilogue_jump_label = empty_operand();
-    data->current_return_register= empty_operand();
     return data;
 }
 
@@ -212,7 +206,6 @@ void CodeGenVisitor_postvisit_return(NodeVisitor *visitor, ASTNode *node)
 
         // emit the instruction
         reg = ASTNode_get_temp_reg(value);
-        EMIT2OP(I2I, reg, retReg);
     }
     // Variable
     else
@@ -224,9 +217,6 @@ void CodeGenVisitor_postvisit_return(NodeVisitor *visitor, ASTNode *node)
 
     // load into return register
     EMIT2OP(I2I, reg, retReg);
-
-    // set current return register
-    DATA->current_return_register = reg;
 }
 
 void CodeGenVisitor_postvisit_binaryop(NodeVisitor *visitor, ASTNode *node)
@@ -410,11 +400,46 @@ void CodeGenVisitor_postvisit_while(NodeVisitor *visitor, ASTNode *node)
 
 }
 
+void printReverse (ASTNode* node, ASTNode* arg)
+{
+    if (arg == NULL)
+    {
+        return;
+    }
+
+    //for (ASTNode* arg = (node->funccall.arguments)->head; arg != NULL; arg = arg->next)
+
+    printReverse(node, arg->next);
+
+    EMIT1OP(PUSH, ASTNode_get_temp_reg(arg));
+}
+
 void CodeGenVisitor_postvisit_funccall(NodeVisitor *visitor, ASTNode *node) 
 {
-    Operand reg = DATA->current_return_register;
-    ASTNode_set_temp_reg(node, reg);
+    Operand reg = virtual_register();
+
+    // count parameters
+    int n = 0;
+    FOR_EACH(ASTNode*, arg, node->funccall.arguments)
+    {
+        n = n + 1;
+        ASTNode_copy_code(node, arg);
+    }
+
+    // we have to print the push instructions in reverse, so call the helper function
+    printReverse(node, (node->funccall.arguments)->head);
+
+    // emit call instruction
     EMIT1OP(CALL, call_label(node->funccall.name));
+
+    // AddI instruction
+    EMIT3OP(ADD_I, stack_register(), int_const(8 * n), stack_register());
+
+    // emit instruction to save return value in a register
+    EMIT2OP(I2I, return_register(), reg);
+
+    // set temo reg for use by expressions
+    ASTNode_set_temp_reg(node, reg);
 }
 
 #endif

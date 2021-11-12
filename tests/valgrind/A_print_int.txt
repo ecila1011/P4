@@ -1,69 +1,21 @@
-==665383== Memcheck, a memory error detector
-==665383== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==665383== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
-==665383== Command: ../decaf inputs/print_int.decaf
-==665383== 
-main:
-  push BP
-  i2i SP => BP
-  addI SP, 0 => SP
-  call print_int
-  loadI 0 => r1
-  i2i r1 => RET
-  i2i r1 => RET
-l0:
-  i2i BP => SP
-  pop BP
-  return
-
-==========================
-sp=65536 bp=-9999999 ret=-9999999
-virtual regs: 
-stack:
-other memory:
-==========================
-
-Executing: push BP
-
-==========================
-sp=65528 bp=-9999999 ret=-9999999
-virtual regs: 
-stack:  65528: -9999999
-other memory:
-==========================
-
-Executing: i2i SP => BP
-
-==========================
-sp=65528 bp=65528 ret=-9999999
-virtual regs: 
-stack:  65528: -9999999
-other memory:
-==========================
-
-Executing: addI SP, 0 => SP
-
-==========================
-sp=65528 bp=65528 ret=-9999999
-virtual regs: 
-stack:  65528: -9999999
-other memory:
-==========================
-
-Executing: call print_int
+==1729205== Memcheck, a memory error detector
+==1729205== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==1729205== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==1729205== Command: ../decaf inputs/print_int.decaf
+==1729205== 
 ERROR: No call target found for 'print_int'
-==665383== 
-==665383== HEAP SUMMARY:
-==665383==     in use at exit: 127,816 bytes in 16 blocks
-==665383==   total heap usage: 1,820 allocs, 1,804 frees, 373,268 bytes allocated
-==665383== 
-==665383== LEAK SUMMARY:
-==665383==    definitely lost: 0 bytes in 0 blocks
-==665383==    indirectly lost: 0 bytes in 0 blocks
-==665383==      possibly lost: 0 bytes in 0 blocks
-==665383==    still reachable: 127,816 bytes in 16 blocks
-==665383==         suppressed: 0 bytes in 0 blocks
-==665383== Rerun with --leak-check=full to see details of leaked memory
-==665383== 
-==665383== For lists of detected and suppressed errors, rerun with: -s
-==665383== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==1729205== 
+==1729205== HEAP SUMMARY:
+==1729205==     in use at exit: 131,008 bytes in 19 blocks
+==1729205==   total heap usage: 1,835 allocs, 1,816 frees, 388,964 bytes allocated
+==1729205== 
+==1729205== LEAK SUMMARY:
+==1729205==    definitely lost: 0 bytes in 0 blocks
+==1729205==    indirectly lost: 0 bytes in 0 blocks
+==1729205==      possibly lost: 0 bytes in 0 blocks
+==1729205==    still reachable: 131,008 bytes in 19 blocks
+==1729205==         suppressed: 0 bytes in 0 blocks
+==1729205== Rerun with --leak-check=full to see details of leaked memory
+==1729205== 
+==1729205== For lists of detected and suppressed errors, rerun with: -s
+==1729205== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

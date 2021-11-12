@@ -1,4 +1,2 @@
 Running suite(s): Default
-ERROR: Address 65536 is invalid (out of range)
-92%: Checks: 13, Failures: 0, Errors: 1
-public.c:40:E:Public:A_funccall_params:0: (after this point) Early exit with return value 1
+100%: Checks: 13, Failures: 0, Errors: 0
