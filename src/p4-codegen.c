@@ -219,15 +219,30 @@ void CodeGenVisitor_postvisit_return(NodeVisitor *visitor, ASTNode *node)
     EMIT2OP(I2I, reg, retReg);
 }
 
+void modulus_helper(ASTNode* node)
+{
+    // create registers 
+    Operand div = virtual_register();
+    Operand mult = virtual_register();
+    Operand mod = virtual_register();
+
+    // divide the left by right
+    EMIT3OP(DIV, ASTNode_get_temp_reg(node->binaryop.left), ASTNode_get_temp_reg(node->binaryop.right), div);
+    
+    // multiply the answer from the prior calculation by the right
+    EMIT3OP(MULT, div, ASTNode_get_temp_reg(node->binaryop.right), mult);
+
+    // subtract the left side by the product from the previous calculation
+    EMIT3OP(SUB, ASTNode_get_temp_reg(node->binaryop.left), mult, mod);
+
+    ASTNode_set_temp_reg(node, mod);
+}
+
 void CodeGenVisitor_postvisit_binaryop(NodeVisitor *visitor, ASTNode *node)
 {
     // copy code from the left and right children
     ASTNode_copy_code(node, node->binaryop.left);
     ASTNode_copy_code(node, node->binaryop.right);
-
-    // allocate a register and set it as the tempp register for the op
-    Operand reg = virtual_register();
-    ASTNode_set_temp_reg(node, reg);
 
     // set the op for the instruction
     InsnForm op = NOP;
@@ -270,9 +285,13 @@ void CodeGenVisitor_postvisit_binaryop(NodeVisitor *visitor, ASTNode *node)
         op = DIV;
         break;
     case MODOP:
-        op = DIV; //basically, l / r = d ; d * r = p ; l - p = mod
-                  //return;
+        modulus_helper(node);
+        return;
     }
+
+    // allocate a register and set it as the tempp register for the op
+    Operand reg = virtual_register();
+    ASTNode_set_temp_reg(node, reg);
 
     // emit the instruction
     EMIT3OP(op, ASTNode_get_temp_reg(node->binaryop.left), ASTNode_get_temp_reg(node->binaryop.right), reg);
@@ -303,7 +322,6 @@ void CodeGenVisitor_postvisit_unaryop(NodeVisitor *visitor, ASTNode *node)
     EMIT2OP(op, ASTNode_get_temp_reg(node->unaryop.child), reg);
 }
 
-// this currently does not work, I am confused
 void CodeGenVisitor_postvisit_assignment(NodeVisitor *visitor, ASTNode *node)
 {
     // copy code from child
@@ -311,14 +329,36 @@ void CodeGenVisitor_postvisit_assignment(NodeVisitor *visitor, ASTNode *node)
 
     // find base pointer for location
     Symbol *sym = lookup_symbol(node, (node->assignment.location)->location.name);
-    EMIT3OP(STORE_AI, ASTNode_get_temp_reg(node->assignment.value), var_base(node, sym), var_offset(node, sym));
+
+    if (sym->length == 1)
+    {
+        EMIT3OP(STORE_AI, ASTNode_get_temp_reg(node->assignment.value), var_base(node, sym), var_offset(node, sym));
+    }
+    // else // array
+    // {
+    //     Operand r0 = virtual_register();
+    //     ASTNode_copy_code(node, (node->assignment.location)->location.index);
+    //     EMIT3OP(MULT_I, ASTNode_get_temp_reg((node->assignment.location)->location.index), int_const(4), r0);
+    //     EMIT3OP(STORE_AO, ASTNode_get_temp_reg(node->assignment.value), var_base(node, sym), r0);
+    // }
 }
 
 void CodeGenVisitor_postvisit_location(NodeVisitor *visitor, ASTNode *node) 
 {
     Operand reg = virtual_register();
     Symbol *sym = lookup_symbol(node, node->location.name);
-    EMIT3OP(LOAD_AI, var_base(node, sym), var_offset(node, sym), reg);
+
+    if (sym->length == 1) // single variable location
+    {
+        EMIT3OP(LOAD_AI, var_base(node, sym), var_offset(node, sym), reg);    
+    }
+    // else // array location
+    // {
+    //     ASTNode_copy_code(node, node->location.index);
+    //     EMIT3OP(MULT_I, ASTNode_get_temp_reg(node->location.index), int_const(4), reg);
+    //     Operand r = virtual_register();
+    //     EMIT3OP(LOAD_AO, var_base(node, sym), reg, r);
+    // }
     ASTNode_set_temp_reg(node, reg);
 
 }

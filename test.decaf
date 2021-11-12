@@ -1,9 +1,7 @@
-def int add(int a, int b) 
-{ 
-    return a + b; 
-}
+int a[5];
 
 def int main() 
 { 
-    return add(2,3); 
+    a[1] = 12;
+    return a[1]; 
 }
