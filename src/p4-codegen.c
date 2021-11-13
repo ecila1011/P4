@@ -446,9 +446,6 @@ void printReverse (ASTNode* node, ASTNode* arg)
     {
         return;
     }
-
-    //for (ASTNode* arg = (node->funccall.arguments)->head; arg != NULL; arg = arg->next)
-
     printReverse(node, arg->next);
 
     EMIT1OP(PUSH, ASTNode_get_temp_reg(arg));
