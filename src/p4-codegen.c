@@ -15,6 +15,27 @@ typedef struct CodeGenData
      */
     Operand current_epilogue_jump_label;
 
+    /**
+     * @brief Reference to the epilogue jump label for the current function
+     */
+    Operand current_while_cond[MAX_VIRTUAL_REGS];
+
+    /**
+     * @brief Reference to the epilogue jump label for the current function
+     */
+    Operand current_while_body[MAX_VIRTUAL_REGS];
+
+    /**
+     * @brief Reference to the epilogue jump label for the current function
+     */
+    Operand current_while_done[MAX_VIRTUAL_REGS];
+
+    /**
+     * @brief Reference to the epilogue jump label for the current function
+     */
+    int num_of_while_loops;
+
+
     /* add any new desired state information (and clean it up in CodeGenData_free) */
 } CodeGenData;
 
@@ -28,6 +49,10 @@ CodeGenData *CodeGenData_new()
     CodeGenData *data = (CodeGenData *)calloc(1, sizeof(CodeGenData));
     CHECK_MALLOC_PTR(data);
     data->current_epilogue_jump_label = empty_operand();
+    data->current_while_body[0] = empty_operand();
+    data->current_while_cond[0] = empty_operand();
+    data->current_while_done[0] = empty_operand();
+    data->num_of_while_loops = 0;
     return data;
 }
 
@@ -39,6 +64,9 @@ CodeGenData *CodeGenData_new()
 void CodeGenData_free(CodeGenData *data)
 {
     /* free everything in data that is allocated on the heap */
+    // free(data->current_while_cond);
+    // free(data->current_while_body);
+    // free(data->current_while_done);
 
     /* free "data" itself */
     free(data);
@@ -114,6 +142,9 @@ Operand var_offset(ASTNode *node, Symbol *variable)
 
 /**************************** PRE-VISITOR METHODS ****************************/
 
+/*
+ * Pre-Visit FuncDecl Method 
+ */
 void CodeGenVisitor_previsit_funcdecl(NodeVisitor *visitor, ASTNode *node)
 {
     /* generate a label reference for the epilogue that can be used while
@@ -122,8 +153,26 @@ void CodeGenVisitor_previsit_funcdecl(NodeVisitor *visitor, ASTNode *node)
     DATA->current_epilogue_jump_label = anonymous_label();
 }
 
+
+/*
+ * Pre-Visit FuncDecl Method 
+ */
+void CodeGenVisitor_previsit_while(NodeVisitor *visitor, ASTNode *node)
+{
+    int i = DATA->num_of_while_loops + 1;
+
+    DATA->current_while_cond[i] = anonymous_label();
+    DATA->current_while_body[i] = anonymous_label();
+    DATA->current_while_done[i] = anonymous_label();
+
+    DATA->num_of_while_loops = i;
+}
+
 /**************************** POST-VISITOR METHODS ****************************/
 
+/*
+ * Post-Visit program Method 
+ */
 void CodeGenVisitor_gen_program(NodeVisitor *visitor, ASTNode *node)
 {
     /*
@@ -142,6 +191,9 @@ void CodeGenVisitor_gen_program(NodeVisitor *visitor, ASTNode *node)
     }
 }
 
+/*
+ * Post-Visit FuncDecl Method 
+ */
 void CodeGenVisitor_gen_funcdecl(NodeVisitor *visitor, ASTNode *node)
 {
     /* every function begins with the corresponding call label */
@@ -164,6 +216,9 @@ void CodeGenVisitor_gen_funcdecl(NodeVisitor *visitor, ASTNode *node)
     EMIT0OP(RETURN);
 }
 
+/*
+ * Post-Visit Block Method 
+ */
 void CodeGenVisitor_gen_block(NodeVisitor *visitor, ASTNode *node)
 {
     FOR_EACH(ASTNode *, statement, node->block.statements)
@@ -172,6 +227,9 @@ void CodeGenVisitor_gen_block(NodeVisitor *visitor, ASTNode *node)
     }
 }
 
+/*
+ * Post-Visit Literal Method 
+ */
 void CodeGenVisitor_postvisit_literal(NodeVisitor *visitor, ASTNode *node)
 {
     Operand op = empty_operand();
@@ -189,6 +247,9 @@ void CodeGenVisitor_postvisit_literal(NodeVisitor *visitor, ASTNode *node)
     ASTNode_set_temp_reg(node, reg);
 }
 
+/*
+ * Post-Visit Return Method 
+ */
 void CodeGenVisitor_postvisit_return(NodeVisitor *visitor, ASTNode *node)
 {
     // create value node for easier handling
@@ -237,6 +298,9 @@ void CodeGenVisitor_postvisit_return(NodeVisitor *visitor, ASTNode *node)
     }
 }
 
+/*
+ * Helper method for modulus operation
+ */
 void modulus_helper(ASTNode* node)
 {
     // create registers 
@@ -256,6 +320,9 @@ void modulus_helper(ASTNode* node)
     ASTNode_set_temp_reg(node, mod);
 }
 
+/*
+ * Post-Visit Binaryop Method 
+ */
 void CodeGenVisitor_postvisit_binaryop(NodeVisitor *visitor, ASTNode *node)
 {
     // copy code from the left and right children
@@ -315,6 +382,9 @@ void CodeGenVisitor_postvisit_binaryop(NodeVisitor *visitor, ASTNode *node)
     EMIT3OP(op, ASTNode_get_temp_reg(node->binaryop.left), ASTNode_get_temp_reg(node->binaryop.right), reg);
 }
 
+/*
+ * Post-Visit Unaryop Method 
+ */
 void CodeGenVisitor_postvisit_unaryop(NodeVisitor *visitor, ASTNode *node)
 {
     // copy code from child
@@ -340,6 +410,9 @@ void CodeGenVisitor_postvisit_unaryop(NodeVisitor *visitor, ASTNode *node)
     EMIT2OP(op, ASTNode_get_temp_reg(node->unaryop.child), reg);
 }
 
+/*
+ * Post-Visit Assignment Method 
+ */
 void CodeGenVisitor_postvisit_assignment(NodeVisitor *visitor, ASTNode *node)
 {
     // copy code from child
@@ -362,6 +435,9 @@ void CodeGenVisitor_postvisit_assignment(NodeVisitor *visitor, ASTNode *node)
     
 }
 
+/*
+ * Post-Visit Location Method 
+ */
 void CodeGenVisitor_postvisit_location(NodeVisitor *visitor, ASTNode *node) 
 {
     Operand reg = virtual_register();
@@ -383,14 +459,9 @@ void CodeGenVisitor_postvisit_location(NodeVisitor *visitor, ASTNode *node)
 
 }
 
-// I dont know if this is needed or how it would be needed
-void CodeGenVisitor_postvisit_vardecl(NodeVisitor *visitor, ASTNode *node)
-{
-    // find base pointer for location
-    // Symbol *sym = lookup_symbol(node, node->vardecl.name);
-    // EMIT1OP(PUSH, var_base(node, sym));
-}
-
+/*
+ * Post-Visit Conditional Method 
+ */
 void CodeGenVisitor_postvisit_conditional(NodeVisitor *visitor, ASTNode *node)
 {
     // copy the condition code
@@ -435,11 +506,16 @@ void CodeGenVisitor_postvisit_conditional(NodeVisitor *visitor, ASTNode *node)
     EMIT1OP(LABEL, done);
 }
 
+/*
+ * Post-Visit While Method 
+ */
 void CodeGenVisitor_postvisit_while(NodeVisitor *visitor, ASTNode *node) 
 {
-    Operand cond = anonymous_label();
-    Operand body = anonymous_label();
-    Operand done = anonymous_label();
+    int i = DATA->num_of_while_loops;
+
+    Operand cond = DATA->current_while_cond[i];
+    Operand body = DATA->current_while_body[i];
+    Operand done = DATA->current_while_done[i];
 
     // emit the label for the condition and copy code from condition
     EMIT1OP(LABEL, cond);
@@ -458,8 +534,12 @@ void CodeGenVisitor_postvisit_while(NodeVisitor *visitor, ASTNode *node)
     // print the done label
     EMIT1OP(LABEL, done);
 
+    DATA->num_of_while_loops = i - 1;
 }
 
+/*
+ * Helper Method for printing parameters in reverse, used by funccall
+ */
 void printReverse (ASTNode* node, ASTNode* arg)
 {
     if (arg == NULL)
@@ -471,6 +551,9 @@ void printReverse (ASTNode* node, ASTNode* arg)
     EMIT1OP(PUSH, ASTNode_get_temp_reg(arg));
 }
 
+/*
+ * Post-Visit FuncCall Method 
+ */
 void CodeGenVisitor_postvisit_funccall(NodeVisitor *visitor, ASTNode *node) 
 {
     Operand reg = virtual_register();
@@ -499,6 +582,24 @@ void CodeGenVisitor_postvisit_funccall(NodeVisitor *visitor, ASTNode *node)
     ASTNode_set_temp_reg(node, reg);
 }
 
+/*
+ * Post-Visit Break Method 
+ */
+void CodeGenVisitor_postvisit_break(NodeVisitor *visitor, ASTNode *node)
+{
+    int i = DATA->num_of_while_loops;
+    EMIT1OP(JUMP, DATA->current_while_done[i]);
+}
+
+/*
+ * Post-Visit Continue Method 
+ */
+void CodeGenVisitor_postvisit_continue(NodeVisitor *visitor, ASTNode *node)
+{
+    int i = DATA->num_of_while_loops;
+    EMIT1OP(JUMP, DATA->current_while_cond[i]);
+}
+
 #endif
 InsnList *generate_code(ASTNode *tree)
 {
@@ -515,11 +616,11 @@ InsnList *generate_code(ASTNode *tree)
 
     /***** pre-visitors *****/
     v->previsit_funcdecl = CodeGenVisitor_previsit_funcdecl;
+    v->previsit_whileloop = CodeGenVisitor_previsit_while;
 
     /***** post-visitors *****/
     v->postvisit_program = CodeGenVisitor_gen_program;
     v->postvisit_funcdecl = CodeGenVisitor_gen_funcdecl;
-    v->postvisit_vardecl = CodeGenVisitor_postvisit_vardecl;
     v->postvisit_block = CodeGenVisitor_gen_block;
     v->postvisit_literal = CodeGenVisitor_postvisit_literal;
     v->postvisit_return = CodeGenVisitor_postvisit_return;
@@ -530,6 +631,8 @@ InsnList *generate_code(ASTNode *tree)
     v->postvisit_whileloop = CodeGenVisitor_postvisit_while;
     v->postvisit_location = CodeGenVisitor_postvisit_location;
     v->postvisit_funccall = CodeGenVisitor_postvisit_funccall;
+    v->postvisit_break = CodeGenVisitor_postvisit_break;
+    v->postvisit_continue = CodeGenVisitor_postvisit_continue;
 
     /* generate code into AST attributes */
     NodeVisitor_traverse_and_free(v, tree);

@@ -1,8 +1,8 @@
-==372871== Memcheck, a memory error detector
-==372871== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==372871== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
-==372871== Command: ../decaf inputs/print_int.decaf
-==372871== 
+==426083== Memcheck, a memory error detector
+==426083== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==426083== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==426083== Command: ../decaf inputs/print_int.decaf
+==426083== 
 main:
   push BP
   i2i SP => BP
@@ -73,18 +73,18 @@ other memory:
 
 Executing: call print_int
 ERROR: No call target found for 'print_int'
-==372871== 
-==372871== HEAP SUMMARY:
-==372871==     in use at exit: 131,008 bytes in 19 blocks
-==372871==   total heap usage: 1,835 allocs, 1,816 frees, 388,964 bytes allocated
-==372871== 
-==372871== LEAK SUMMARY:
-==372871==    definitely lost: 0 bytes in 0 blocks
-==372871==    indirectly lost: 0 bytes in 0 blocks
-==372871==      possibly lost: 0 bytes in 0 blocks
-==372871==    still reachable: 131,008 bytes in 19 blocks
-==372871==         suppressed: 0 bytes in 0 blocks
-==372871== Rerun with --leak-check=full to see details of leaked memory
-==372871== 
-==372871== For lists of detected and suppressed errors, rerun with: -s
-==372871== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==426083== 
+==426083== HEAP SUMMARY:
+==426083==     in use at exit: 131,008 bytes in 19 blocks
+==426083==   total heap usage: 1,835 allocs, 1,816 frees, 388,964 bytes allocated
+==426083== 
+==426083== LEAK SUMMARY:
+==426083==    definitely lost: 0 bytes in 0 blocks
+==426083==    indirectly lost: 0 bytes in 0 blocks
+==426083==      possibly lost: 0 bytes in 0 blocks
+==426083==    still reachable: 131,008 bytes in 19 blocks
+==426083==         suppressed: 0 bytes in 0 blocks
+==426083== Rerun with --leak-check=full to see details of leaked memory
+==426083== 
+==426083== For lists of detected and suppressed errors, rerun with: -s
+==426083== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

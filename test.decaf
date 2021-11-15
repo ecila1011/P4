@@ -1,9 +1,23 @@
-int a[5];
-int c[5];
-
 def int main() 
 { 
-    a[-2] = 1000;
-    c[1] = 12 * a[1*-2];
-    return c[1]; 
+    int a;
+    int b;
+    a = 1;
+    b = 1;
+    while (a < 3)
+    {
+        while (b < 5)
+        {
+            if (b == 3)
+            {
+                b = 4;
+                continue;
+                b = 1000;
+            }
+            b = b + 1;
+        }
+        a = a + 1;
+        break;
+    }
+    return a; 
 }
