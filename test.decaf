@@ -1,7 +1,9 @@
 int a[5];
+int c[5];
 
 def int main() 
 { 
-    a[1] = 12;
-    return a[1]; 
+    a[-2] = 1000;
+    c[1] = 12 * a[1*-2];
+    return c[1]; 
 }

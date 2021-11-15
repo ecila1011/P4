@@ -195,28 +195,46 @@ void CodeGenVisitor_postvisit_return(NodeVisitor *visitor, ASTNode *node)
     ASTNode *value = node->funcreturn.value;
 
     // create return register
-    Operand reg = virtual_register();
+    Operand reg1 = empty_operand();
+    Operand reg2 = empty_operand();
     Operand retReg = return_register();
     
     // Literal
-    if (ASTNode_has_attribute(value, "reg"))
+    if (true)
     {
         /* copy code from literal */
         ASTNode_copy_code(node, value);
 
         // emit the instruction
-        reg = ASTNode_get_temp_reg(value);
+        reg1 = ASTNode_get_temp_reg(value);
+
+        // load into return register
+        EMIT2OP(I2I, reg1, retReg);
     }
     // Variable
     else
     {
         // Load location into register
-        Symbol *sym = lookup_symbol(node, (node->assignment.location)->location.name);
-        EMIT3OP(LOAD_AI, var_base(node, sym), var_offset(node, sym), reg);
-    }
+        Symbol *sym = lookup_symbol(node, value->location.name);
 
-    // load into return register
-    EMIT2OP(I2I, reg, retReg);
+        if (sym->length == 1) // single variable
+        {
+            reg1 = virtual_register();
+            EMIT3OP(LOAD_AI, var_base(node, sym), var_offset(node, sym), reg1);
+            // load into return register
+            EMIT2OP(I2I, reg1, retReg);
+        }
+        else // array
+        {
+            reg1 = virtual_register();
+            reg2 = virtual_register();
+            ASTNode_copy_code(node, value->location.index);
+            EMIT3OP(MULT_I, ASTNode_get_temp_reg(value->location.index), int_const(8), reg1);
+            EMIT3OP(LOAD_AO, var_base(node, sym), reg1, reg2);
+            // load into return register
+            EMIT2OP(I2I, reg2, retReg);
+        }
+    }
 }
 
 void modulus_helper(ASTNode* node)
@@ -334,13 +352,14 @@ void CodeGenVisitor_postvisit_assignment(NodeVisitor *visitor, ASTNode *node)
     {
         EMIT3OP(STORE_AI, ASTNode_get_temp_reg(node->assignment.value), var_base(node, sym), var_offset(node, sym));
     }
-    // else // array
-    // {
-    //     Operand r0 = virtual_register();
-    //     ASTNode_copy_code(node, (node->assignment.location)->location.index);
-    //     EMIT3OP(MULT_I, ASTNode_get_temp_reg((node->assignment.location)->location.index), int_const(4), r0);
-    //     EMIT3OP(STORE_AO, ASTNode_get_temp_reg(node->assignment.value), var_base(node, sym), r0);
-    // }
+    else // array
+    {
+        Operand r0 = virtual_register();
+        ASTNode_copy_code(node, (node->assignment.location)->location.index);
+        EMIT3OP(MULT_I, ASTNode_get_temp_reg((node->assignment.location)->location.index), int_const(8), r0);
+        EMIT3OP(STORE_AO, ASTNode_get_temp_reg(node->assignment.value), var_base(node, sym), r0);
+    }
+    
 }
 
 void CodeGenVisitor_postvisit_location(NodeVisitor *visitor, ASTNode *node) 
@@ -350,16 +369,17 @@ void CodeGenVisitor_postvisit_location(NodeVisitor *visitor, ASTNode *node)
 
     if (sym->length == 1) // single variable location
     {
-        EMIT3OP(LOAD_AI, var_base(node, sym), var_offset(node, sym), reg);    
+        EMIT3OP(LOAD_AI, var_base(node, sym), var_offset(node, sym), reg);  
+        ASTNode_set_temp_reg(node, reg);  
     }
-    // else // array location
-    // {
-    //     ASTNode_copy_code(node, node->location.index);
-    //     EMIT3OP(MULT_I, ASTNode_get_temp_reg(node->location.index), int_const(4), reg);
-    //     Operand r = virtual_register();
-    //     EMIT3OP(LOAD_AO, var_base(node, sym), reg, r);
-    // }
-    ASTNode_set_temp_reg(node, reg);
+    else // array location`
+    {
+        ASTNode_copy_code(node, node->location.index);
+        EMIT3OP(MULT_I, ASTNode_get_temp_reg(node->location.index), int_const(8), reg);
+        Operand r = virtual_register();
+        EMIT3OP(LOAD_AO, var_base(node, sym), reg, r);
+        ASTNode_set_temp_reg(node, r);
+    }
 
 }
 

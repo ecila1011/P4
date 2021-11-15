@@ -13,7 +13,7 @@
  * 
  * Disable this before submitting or running integration tests
  */
-const bool debug_mode = false;
+const bool debug_mode = true;
 
 /**
  * @brief Error message buffer
