@@ -552,11 +552,41 @@ void printReverse (ASTNode* node, ASTNode* arg)
 }
 
 /*
+ * Generate output for the special case print functions
+ */
+void generate_output(ASTNode* node) {
+
+    // char* str = NULL;
+    // int val = 0;
+
+    // if (strcmp(node->funccall.name, "print_str"))
+    // {
+    //     str = ((node->funccall.arguments)->head)->literal.string;
+    //     EMIT1OP(PRINT, str_const(str));
+    // }
+    // else if (strcmp(node->funccall.name, "print_int"))
+    // {
+    //     //val = (node->funccall.arguments)->head;
+    //     EMIT1OP(PRINT, int_const(val));
+    // }
+    // else if (strcmp(node->funccall.name, "print_int"))
+    // {
+    //     //val = (node->funccall.arguments)->head;
+    //     EMIT1OP(PRINT, int_const(val));
+    // }
+}
+
+/*
  * Post-Visit FuncCall Method 
  */
 void CodeGenVisitor_postvisit_funccall(NodeVisitor *visitor, ASTNode *node) 
 {
     Operand reg = virtual_register();
+
+    // if (strcmp(node->funccall.name, "print_str"))
+    // {
+    //     generate_output(node);
+    // }
 
     // count parameters
     int n = 0;

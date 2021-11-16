@@ -1,23 +1,12 @@
+int a[5];
+
+def int add()
+{
+    a[1] = 1000;
+}
+
 def int main() 
 { 
-    int a;
-    int b;
-    a = 1;
-    b = 1;
-    while (a < 3)
-    {
-        while (b < 5)
-        {
-            if (b == 3)
-            {
-                b = 4;
-                continue;
-                b = 1000;
-            }
-            b = b + 1;
-        }
-        a = a + 1;
-        break;
-    }
-    return a; 
+    add();
+    return a[1];
 }
