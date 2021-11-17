@@ -556,24 +556,27 @@ void printReverse (ASTNode* node, ASTNode* arg)
  */
 void generate_output(ASTNode* node) {
 
-    // char* str = NULL;
-    // int val = 0;
+    ASTNode *str = NULL;
+    ASTNode *val = NULL;
 
-    // if (strcmp(node->funccall.name, "print_str"))
-    // {
-    //     str = ((node->funccall.arguments)->head)->literal.string;
-    //     EMIT1OP(PRINT, str_const(str));
-    // }
-    // else if (strcmp(node->funccall.name, "print_int"))
-    // {
-    //     //val = (node->funccall.arguments)->head;
-    //     EMIT1OP(PRINT, int_const(val));
-    // }
-    // else if (strcmp(node->funccall.name, "print_int"))
-    // {
-    //     //val = (node->funccall.arguments)->head;
-    //     EMIT1OP(PRINT, int_const(val));
-    // }
+    if (strcmp(node->funccall.name, "print_str") == 0)
+    {
+        str = ((node->funccall.arguments)->head);
+        // ASTNode_copy_code(node, str);
+        EMIT1OP(PRINT, str_const(str->literal.string));
+    }
+    else if (strcmp(node->funccall.name, "print_int") == 0)
+    {
+        val = ((node->funccall.arguments)->head);
+        ASTNode_copy_code(node, val);
+        EMIT1OP(PRINT, ASTNode_get_temp_reg(val));
+    }
+    else if (strcmp(node->funccall.name, "print_bool") == 0)
+    {
+        val = ((node->funccall.arguments)->head);
+        ASTNode_copy_code(node, val);
+        EMIT1OP(PRINT, ASTNode_get_temp_reg(val));
+    }
 }
 
 /*
@@ -583,10 +586,11 @@ void CodeGenVisitor_postvisit_funccall(NodeVisitor *visitor, ASTNode *node)
 {
     Operand reg = virtual_register();
 
-    // if (strcmp(node->funccall.name, "print_str"))
-    // {
-    //     generate_output(node);
-    // }
+    if (strcmp(node->funccall.name, "print_str") == 0 || strcmp(node->funccall.name, "print_int") == 0 || strcmp(node->funccall.name, "print_bool") == 0)
+    {
+        generate_output(node);
+        return;
+    }
 
     // count parameters
     int n = 0;
@@ -608,7 +612,7 @@ void CodeGenVisitor_postvisit_funccall(NodeVisitor *visitor, ASTNode *node)
     // emit instruction to save return value in a register
     EMIT2OP(I2I, return_register(), reg);
 
-    // set temo reg for use by expressions
+    // set temp reg for use by expressions
     ASTNode_set_temp_reg(node, reg);
 }
 

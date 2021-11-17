@@ -1,90 +1,15 @@
-==426083== Memcheck, a memory error detector
-==426083== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==426083== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
-==426083== Command: ../decaf inputs/print_int.decaf
-==426083== 
-main:
-  push BP
-  i2i SP => BP
-  addI SP, 0 => SP
-  loadI 7 => r0
-  push r0
-  call print_int
-  addI SP, 8 => SP
-  i2i RET => r1
-  loadI 0 => r2
-  i2i r2 => RET
-l0:
-  i2i BP => SP
-  pop BP
-  return
-
-==========================
-sp=65536 bp=-9999999 ret=-9999999
-virtual regs: 
-stack:
-other memory:
-==========================
-
-Executing: push BP
-
-==========================
-sp=65528 bp=-9999999 ret=-9999999
-virtual regs: 
-stack:  65528: -9999999
-other memory:
-==========================
-
-Executing: i2i SP => BP
-
-==========================
-sp=65528 bp=65528 ret=-9999999
-virtual regs: 
-stack:  65528: -9999999
-other memory:
-==========================
-
-Executing: addI SP, 0 => SP
-
-==========================
-sp=65528 bp=65528 ret=-9999999
-virtual regs: 
-stack:  65528: -9999999
-other memory:
-==========================
-
-Executing: loadI 7 => r0
-
-==========================
-sp=65528 bp=65528 ret=-9999999
-virtual regs:  r0=7
-stack:  65528: -9999999
-other memory:
-==========================
-
-Executing: push r0
-
-==========================
-sp=65520 bp=65528 ret=-9999999
-virtual regs:  r0=7
-stack:  65528: -9999999  65520: 7
-other memory:
-==========================
-
-Executing: call print_int
-ERROR: No call target found for 'print_int'
-==426083== 
-==426083== HEAP SUMMARY:
-==426083==     in use at exit: 131,008 bytes in 19 blocks
-==426083==   total heap usage: 1,835 allocs, 1,816 frees, 388,964 bytes allocated
-==426083== 
-==426083== LEAK SUMMARY:
-==426083==    definitely lost: 0 bytes in 0 blocks
-==426083==    indirectly lost: 0 bytes in 0 blocks
-==426083==      possibly lost: 0 bytes in 0 blocks
-==426083==    still reachable: 131,008 bytes in 19 blocks
-==426083==         suppressed: 0 bytes in 0 blocks
-==426083== Rerun with --leak-check=full to see details of leaked memory
-==426083== 
-==426083== For lists of detected and suppressed errors, rerun with: -s
-==426083== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==2708465== Memcheck, a memory error detector
+==2708465== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==2708465== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==2708465== Command: ../decaf inputs/print_int.decaf
+==2708465== 
+7RETURN VALUE = 0
+==2708465== 
+==2708465== HEAP SUMMARY:
+==2708465==     in use at exit: 0 bytes in 0 blocks
+==2708465==   total heap usage: 1,819 allocs, 1,819 frees, 1,994,988 bytes allocated
+==2708465== 
+==2708465== All heap blocks were freed -- no leaks are possible
+==2708465== 
+==2708465== For lists of detected and suppressed errors, rerun with: -s
+==2708465== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

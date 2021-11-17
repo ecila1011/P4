@@ -1,14 +1,8 @@
-int a[5];
-
-def int add()
-{
-    a[1] = 1000;
-}
-
 def int main() 
 { 
-    int i;
-    i = 1;
-    add();
-    return a[i];
+    print_bool(true);
+    print_str("\n");
+    print_bool(false);
+    print_str("\n");
+    return 1;
 }
